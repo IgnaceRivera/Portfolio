@@ -198,7 +198,30 @@
   }
 
   /* ---------- 3D model tabs ---------- */
-  // each pane's iframe loads only when its tab is first opened (data-src -> src)
+  // m1 loads with the page; m2 preloads in background after open so switching is instant
+  function markReady(pane) {
+    if (pane) pane.classList.add("ready");
+  }
+  document.querySelectorAll(".model-pane iframe").forEach(function (frame) {
+    frame.addEventListener("load", function () {
+      markReady(frame.closest(".model-pane"));
+      var ph = frame.parentElement.querySelector(".model-placeholder");
+      if (frame.hasAttribute("src") && frame.getAttribute("src") && ph) ph.remove();
+    });
+  });
+  function preloadModels() {
+    document.querySelectorAll('.model-pane iframe[data-src]').forEach(function (frame) {
+      frame.src = frame.getAttribute("data-src");
+      frame.removeAttribute("data-src");
+    });
+  }
+  if (document.readyState === "complete") {
+    setTimeout(preloadModels, 1500);
+  } else {
+    window.addEventListener("load", function () {
+      setTimeout(preloadModels, 1500);
+    });
+  }
   document.querySelectorAll(".model-tab").forEach(function (tab) {
     tab.addEventListener("click", function () {
       var id = tab.getAttribute("data-model-tab");
